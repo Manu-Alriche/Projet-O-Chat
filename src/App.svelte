@@ -1,6 +1,7 @@
 <!-- JAVASCRIPT ------------------------------------------------------------------------------------- -->
 <script>
   import { onMount } from 'svelte';
+  const token = import.meta.env.VITE_MISTRAL_API_TOKEN;
   
   let prompt = $state("");
   let messages = $state([]);
@@ -103,7 +104,7 @@
         {
           method: 'POST',
           headers: {
-            'Authorization': 'Bearer 0R3poZLxMA762GXAdVwjzwVDlhoNCTWF',
+            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
