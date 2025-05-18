@@ -1,7 +1,12 @@
 <!-- JAVASCRIPT ------------------------------------------------------------------------------------- -->
 <script>
   import { onMount } from 'svelte';
+  import Markdown from 'svelte-exmarkdown';
+	import { gfmPlugin } from 'svelte-exmarkdown/gfm';
+
+	const plugins = [gfmPlugin()];
   const token = import.meta.env.VITE_MISTRAL_API_TOKEN;
+
   
   let prompt = $state("");
   let messages = $state([]);
@@ -80,7 +85,6 @@
     }
   }
 
-  
   async function callMistral(){
      // Afficher immédiatement dans le chat
      messages = [...messages, { role: "user", content: prompt, is_ai_response: false }];
@@ -116,7 +120,7 @@
         }
       );
     const data = await responseText.json();
-    console.log(data);
+
     const botResponse = data.choices?.[0]?.message?.content ?? "Pas de reponse.";
     
     // Afficher la réponse dans le chat
@@ -147,53 +151,52 @@
 </script>
 
 <!-- HTML ------------------------------------------------------------------------------------------- -->
-<div class="desktop">
-  <button class="burger" onclick={() => showSidebar = !showSidebar}>
-    {#if showSidebar}
-        ✖
-    {:else}
-        ☰
-    {/if}
-  </button>
-  <div class="sidebar" class:open={showSidebar}>   
-        <div class="blockA">
-          <h1>O'Chat</h1>
-            <h2>CONVERSATIONS</h2>
-            <ul class="chat-list">
-              {#each conversations as conv}
-                <li class="chat-item" onclick={() => loadMessages(conv.id)} class:active={conv.id === currentConversationId}>
-                  {conv.title} 
-                  <button class="close" onclick={() => deleteConversation(conv.id)}>X</button>
-                </li>
-              {/each}
-            </ul>
+  <div class="desktop">
+    <button class="burger" onclick={() => showSidebar = !showSidebar}>
+      {#if showSidebar}
+          ✖
+      {:else}
+          ☰
+      {/if}
+    </button>
+    <div class="sidebar" class:open={showSidebar}>   
+          <div class="blockA">
+            <h1>O'Chat</h1>
+              <h2>CONVERSATIONS</h2>
+              <ul class="chat-list">
+                {#each conversations as conv}
+                  <li class="chat-item" onclick={() => loadMessages(conv.id)} class:active={conv.id === currentConversationId}>
+                    {conv.title} 
+                    <button class="close" onclick={() => deleteConversation(conv.id)}>X</button>
+                  </li>
+                {/each}
+              </ul>
+          </div>
+          <div class= "blockB">
+              <input bind:value={newConversationTitle} type="text" placeholder="Nouveau titre de conversation..." />
+              <button class="create" type="submit" onclick={createConversation}>Créer ➕</button>
+          </div>
         </div>
-        <div class= "blockB">
-            <input bind:value={newConversationTitle} type="text" placeholder="Nouveau titre de conversation..." />
-            <button class="create" type="submit" onclick={createConversation}>Créer ➕</button>
-        </div>
-      </div>
-      <div class="chat-window">
-          <div class= "blockC" >
-            {#each messages as message}
-            <div class="message {message.role}">
-              <div class="label">{message.role === 'assistant' ? '🤖 IA' : '🧑 Utilisateur'}</div>
-              <div class="bubble">{message.content}</div>
+        <div class="chat-window">
+            <div class= "blockC" >
+              {#each messages as message}
+              <div class="message {message.role}">
+                <div class="label">{message.role === 'assistant' ? '🤖 IA' : '🧑 Utilisateur'}</div>
+                <div class="bubble"><Markdown md={message.content} {plugins}/></div>
+              </div>
+               {/each}
             </div>
-            <div bind:this={scrollAnchor}></div>
-          {/each}
-          </div>
-          <div class= "blockD">
-              <textarea bind:value={prompt} placeholder="Tapez votre message..." cols="200" rows="7" 
-               onkeydown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  callMistral();
-                }
-              }}></textarea>
-              <button class="btn" type="submit" onclick={callMistral}>Envoyer</button>
-          </div>
-      </div>
+            <div class= "blockD">
+                <textarea bind:value={prompt} placeholder="Tapez votre message..." cols="200" rows="7" 
+                onkeydown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    callMistral();
+                  }
+                }}></textarea>
+                <button class="btn" type="submit" onclick={callMistral}>Envoyer</button>
+            </div>
+        </div>
 </div>
 
 <!-- CSS -------------------------------------------------------------------------------------------- -->
@@ -333,25 +336,25 @@ ul {
 }
 
 .user {
-    align-self: flex-start;
-    text-align: left;
-  }
-
-  .assistant {
     align-self: flex-end;
     text-align: right;
   }
 
+  .assistant {
+    align-self: flex-start;
+    text-align: left;
+  }
+
   .bubble {
     padding: 0.7rem 1rem;
-    border-radius: 1rem 1rem 1rem 0;
+    border-radius: 1rem 1rem 0 1rem ;
     background-color: #c6e7ff;
     display: inline-block;
   }
 
   .assistant .bubble {
     background-color: #ffd9a0;
-    border-radius: 1rem 1rem 0 1rem ;
+    border-radius: 1rem 1rem 1rem 0 ;
   }
 
   .label {
